@@ -1,0 +1,103 @@
+/*
+To customize the look and feel of Ionic, you can override the variables
+in ionic's _variables.scss file.
+
+For example, you might change some of the default colors:
+
+$light:                           #fff !default;
+$stable:                          #f8f8f8 !default;
+$positive:                        #387ef5 !default;
+$calm:                            #11c1f3 !default;
+$balanced:                        #33cd5f !default;
+$energized:                       #ffc900 !default;
+$assertive:                       #ef473a !default;
+$royal:                           #886aea !default;
+$dark:                            #444 !default;
+*/
+
+$energized:                       #211331 !default;
+$assertive:                       #502f77 !default;
+$dark:                            #211331 !default;
+
+// The path for our ionicons font files, relative to the built CSS in www/css
+$ionicons-font-path: "../lib/ionic/fonts" !default;
+
+// Include all of Ionic
+@import "www/lib/ionic/scss/ionic";
+
+.grid-item {
+  position: relative;
+  float: left;
+  width: 20%;
+  height: 0;
+  padding-bottom: 20%;
+  background: #211331;
+  z-index: 1;
+}
+.grid-item.large {
+  position: relative;
+  float: left;
+  width: 25%;
+  height: 0;
+  padding-bottom: 25%;
+  background: #211331;
+  z-index: 1;
+}
+.grid-item.small {
+  position: relative;
+  float: left;
+  width: 10%;
+  height: 0;
+  padding-bottom: 10%;
+  background: #211331;
+  z-index: 1;
+  input {
+    font-size: 1.2rem;
+  }
+}
+.grid-item input {
+  position: absolute;
+  margin-top: 20%;
+  margin-left: 35%;
+  width: 60%;
+  height: 60%;
+  background-color: transparent;
+  text-align: center;
+  vertical-align: middle;
+  z-index: 3;
+  color: #fff;
+  font-size: 1.6rem;
+}
+.fillable {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  background-color: #502f77;
+  border-radius: 5px;
+  z-index: 2;
+}
+
+h1.pushup {
+  font-size: 8.0rem;
+  font-weight: bold;
+}
+
+.dark-menu {
+  background-color: #110a1a;
+}
+
+.button.footer-button {
+  margin-top: 0;
+  font-weight: 900;
+}
+.title.title-center {
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.title-image {
+  margin-top: 8px;
+  height: 27px;
+}

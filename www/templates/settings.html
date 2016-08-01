@@ -1,0 +1,14 @@
+<ion-view view-title="Settings">
+  <ion-content>
+    <ion-item class="item-divider">on app start</ion-item>
+    <ion-toggle ng-model="gridRedirect">Go to grid immediately</ion-toggle>
+    <ion-item class="item-divider">Grid width</ion-item>
+    <ion-radio ng-model="gridWidth" ng-value="'4'">4 sets</ion-radio>
+    <ion-radio ng-model="gridWidth" ng-value="'5'">5 sets</ion-radio>
+    <ion-radio ng-model="gridWidth" ng-value="'10'">10 sets</ion-radio>
+    <ion-item class="item-divider">Amount of sets on grid</ion-item>
+    <div class="item range range-positive">
+      20 <input type="range" name="volume" min="20" max="100" value="40" step="20"> 100
+    </div>
+  </ion-content>
+</ion-view>

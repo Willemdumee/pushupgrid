@@ -1,0 +1,13 @@
+<ion-view view-title="Your grid">
+    <ion-content>
+        <form  ng-submit="submitForm()">
+            <div ng-repeat="item in items" class="grid-item" ng-class="itemWidth">
+
+                <input type="number" name="{{ item.index }}" ng-model="gridValue" ng-value="(item.value == 0 ? '' : item.value)" ng-change="submitForm($index, gridValue)" min="0">
+
+                <span ng-show="item.value == 0" class="fillable"></span>
+            </div>
+            <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+        </form>
+    </ion-content>
+</ion-view>
