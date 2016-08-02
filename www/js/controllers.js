@@ -11,7 +11,42 @@ angular.module('starter.controllers', [])
 
     })
 
-    .controller('homeCtrl', function ($scope, $localstorage) {
+    .controller('homeCtrl', function ($scope, $localstorage, $cordovaSQLite, $ionicPlatform) {
+
+
+        $ionicPlatform.ready(function() {
+            var day = new Date();
+            day.setHours(0, 0, 0, 0);
+            $scope.save(5, day);
+            $scope.load();
+        });
+        $scope.save = function (pushups, day) {
+
+            $cordovaSQLite.execute(db, 'INSERT INTO Days (pushups, day) VALUES (?,?)', [pushups, day])
+                .then(function (result) {
+                    console.log("Day saved successful, cheers!");
+                }, function (error) {
+                    console.log("Error on saving: " + error.message);
+                })
+
+        };
+
+        $scope.load = function () {
+
+            // Execute SELECT statement to load message from database.
+            $cordovaSQLite.execute(db, 'SELECT * FROM Days ORDER BY id DESC')
+                .then(
+                    function (result) {
+                        for (var i = 0; i < result.rows.length; i++) {
+                            console.log(result.rows.item(i).pushups, result.rows.item(i).day);
+                        }
+                    }
+                );
+        }
+
+        var day = new Date();
+        day.setHours(0, 0, 0, 0);
+        $scope.day = day;
 
         $scope.pushups = 0;
         $scope.$on("$ionicView.enter", function (scopes, states) {
