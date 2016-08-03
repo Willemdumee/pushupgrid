@@ -9826,31 +9826,23 @@ a.button {
   text-align: center; }
 
 .grid-item.large {
-  position: relative;
-  float: left;
   width: 25%;
-  height: 0;
-  padding-bottom: 25%;
-  background: #211331;
-  z-index: 1; }
+  padding-bottom: 25%; }
 
 .grid-item.small {
-  position: relative;
-  float: left;
   width: 10%;
-  height: 0;
-  padding-bottom: 10%;
-  background: #211331;
-  z-index: 1; }
-  .grid-item.small input {
+  padding-bottom: 10%; }
+  .grid-item.small .set {
     font-size: 1.2rem; }
 
-.grid-item input {
+.grid-item .set {
   position: absolute;
-  margin-top: 20%;
-  margin-left: 15%;
+  display: table-cell;
+  margin-top: 30%;
+  margin-left: 10%;
   width: 80%;
-  height: 60%;
+  height: 100%;
+  line-height: 100%;
   background-color: transparent;
   text-align: center;
   vertical-align: middle;
@@ -9866,7 +9858,10 @@ a.button {
   height: 80%;
   background-color: #502f77;
   border-radius: 5px;
-  z-index: 2; }
+  z-index: 4;
+  pointer-events: none; }
+  .fillable.active {
+    background-color: #372152; }
 
 .dark-menu {
   background-color: #110a1a; }
@@ -9937,3 +9932,7 @@ a.button {
   .dark-menu .item span {
     font-size: 1.2rem;
     margin-left: 15px; }
+
+.digit-keyboard-key-wrapper {
+  background-color: #fff;
+  color: #211331; }

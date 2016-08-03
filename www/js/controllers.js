@@ -76,6 +76,7 @@ angular.module('starter.controllers', [])
                     for (var key in sets) {
                         if (sets.hasOwnProperty(key)) {
                             var pushupSet = JSON.stringify(sets[key].value);
+                            console.log(pushupSet);
                             if (pushupSet != 'null')
                                 $scope.pushups = $scope.pushups + parseInt(pushupSet);
                         }
@@ -116,6 +117,51 @@ angular.module('starter.controllers', [])
 
         $scope.itemWidth = 'medium';
         $scope.gridSize = '100';
+        $scope.keyboardVisible = false;
+
+        // used later to determine which field in grid is used
+        $scope.activeField = false;
+
+        // ion digit keyboard settings
+        $scope.keyboardSettings = {
+            theme: "asertive",
+            action: function(number) {
+                console.log(number, $scope.activeField);
+                $scope.items[$scope.activeField].value += number;
+                setGridinLocalStorage();
+            },
+            leftButton: {
+                html: '<i class="icon ion-minus"></i>',
+                action: function() {
+                    if ($scope.items[$scope.activeField].value > 0) {
+                        $scope.items[$scope.activeField].value -= 1;
+                        setGridinLocalStorage();
+                    }
+                }
+            },
+            rightButton: {
+                html: '<i class="icon ion-plus"></i>',
+                action: function() {
+                    $scope.items[$scope.activeField].value += 1;
+                    setGridinLocalStorage();
+                }
+            }
+        };
+
+        $scope.showKeyboard = function($event, index) {
+            if ($event.stopPropagation) $event.stopPropagation();
+            if ($event.preventDefault) $event.preventDefault();
+
+            $scope.activeField = index;
+            // clear the already existing value
+            $scope.items[$scope.activeField].value = 0;
+            setGridinLocalStorage();
+            $scope.keyboardVisible = true;
+        };
+
+        $scope.hideKeyboard = function($event) {
+            $scope.keyboardVisible = false;
+        };
 
         if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
             $scope.itemWidth = $localstorage.get('ctrl-gridWidth');
