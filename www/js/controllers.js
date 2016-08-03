@@ -11,7 +11,7 @@ angular.module('starter.controllers', [])
 
     })
 
-    .controller('homeCtrl', function ($scope, $localstorage, $cordovaSQLite, $ionicPlatform) {
+    .controller('homeCtrl', function ($scope, $localstorage, $cordovaSQLite, $ionicPlatform, $state) {
 
         var today = new Date();
         //for testing purposes set current date to tomorrow
@@ -59,8 +59,8 @@ angular.module('starter.controllers', [])
         });
 
         $scope.goToGrid = function() {
-            $state.go('app/grid');
-        }
+            $state.go('app.grid');
+        };
 
         updatePushups = function () {
 
@@ -106,7 +106,7 @@ angular.module('starter.controllers', [])
 
     })
 
-    .controller('gridCtrl', function ($scope, $localstorage, $state) {
+    .controller('gridCtrl', function ($scope, $localstorage) {
 
         var today = new Date();
         // get offset of time so time is set to midnight
