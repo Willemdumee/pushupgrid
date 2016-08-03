@@ -11,9 +11,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova'])
     .run(function ($ionicPlatform, $cordovaSQLite) {
         $ionicPlatform.ready(function () {
 
-            console.log('running');
-
-            db = $cordovaSQLite.openDB({name:"ctrl-pushupgrid.db", location:'default'});
+            db = $cordovaSQLite.openDB({name: "ctrl-pushupgrid.db", location: 'default'});
             $cordovaSQLite.execute(db, 'CREATE TABLE IF NOT EXISTS Days (id INTEGER PRIMARY KEY AUTOINCREMENT, pushups INTEGER, day DATETIME)');
 
             // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -31,7 +29,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova'])
         });
     })
 
-    .config(function ($stateProvider, $urlRouterProvider) {
+    .config(function ($stateProvider, $urlRouterProvider, $ionicConfigProvider) {
         $stateProvider
 
             .state('app', {
@@ -76,10 +74,21 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova'])
                         controller: 'gridCtrl'
                     }
                 }
+            })
+            .state('app.info', {
+                url: '/info',
+                views: {
+                    'menuContent': {
+                        templateUrl: 'templates/info.html'
+                    }
+                }
             });
         // if none of the above states are matched, use this as the fallback
         $urlRouterProvider.otherwise('/app/home');
+
+        $ionicConfigProvider.backButton.text('Back').previousTitleText(false);
     })
+
 
     .factory('$localstorage', ['$window', function ($window) {
         return {
@@ -106,4 +115,13 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova'])
                 return JSON.parse($window.localStorage[key] || '{}');
             }
         }
+    }])
+
+    .factory('sqliteExamples', [$cordovaSQLite, function ($cordovaSQLite) {
+        //update
+        // $cordovaSQLite.execute(db, "UPDATE Days SET day = '\"2016-08-01T00:00:00.000Z\"', pushups = '48' WHERE id = 32");
+        //insert
+        // $cordovaSQLite.execute(db, "INSERT INTO Days (day,pushups) VALUES ('\"2016-08-01T00:00:00.000Z\"', 68)");
+        // delete
+        // $cordovaSQLite.execute(db, "DELETE FROM Days WHERE id = 16");
     }]);

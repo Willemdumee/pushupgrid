@@ -17,6 +17,7 @@ $dark:                            #444 !default;
 
 $energized:                       #211331 !default;
 $assertive:                       #502f77 !default;
+$balanced:                       lighten($assertive, 10) !default;
 $dark:                            #211331 !default;
 
 // The path for our ionicons font files, relative to the built CSS in www/css
@@ -33,6 +34,7 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
   padding-bottom: 20%;
   background: #211331;
   z-index: 1;
+  text-align: center;
 }
 .grid-item.large {
   position: relative;
@@ -58,8 +60,8 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 .grid-item input {
   position: absolute;
   margin-top: 20%;
-  margin-left: 35%;
-  width: 60%;
+  margin-left: 15%;
+  width: 80%;
   height: 60%;
   background-color: transparent;
   text-align: center;
@@ -79,18 +81,19 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
   z-index: 2;
 }
 
-h1.pushup {
-  font-size: 8.0rem;
-  font-weight: bold;
-}
+
 
 .dark-menu {
   background-color: #110a1a;
 }
-
+.bar.bar-footer {
+  height: 64px;
+}
 .button.footer-button {
   margin-top: 0;
   font-weight: 900;
+  height: 56px;
+  font-size: 1.6rem;
 }
 .title.title-center {
   font-weight: 900;
@@ -100,4 +103,74 @@ h1.pushup {
 .title-image {
   margin-top: 8px;
   height: 27px;
+}
+
+.home {
+  h1.pushup {
+    font-size: 8.0rem;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  h2.pushup {
+    margin: -15px 0 10px;
+  }
+
+    .item-divider {
+      height: 16px;
+      padding-top: 4px;
+    }
+    .item.history {
+      padding: 0;
+      height: 45px;
+    }
+    .side {
+      min-width: 15%;
+      padding: 5px 10px 5px 5px;
+      height: 100%;
+      display: inline;
+      float: left;
+      h3 {
+        color: #fff !important;
+        height: 35px;
+        line-height: 35px;
+        font-size: 1.4rem;
+        text-align: center;
+      }
+    }
+    .main {
+      padding: 0 10px;
+      width: 50%;
+      height: 100%;
+      display: inline;
+      float: left;
+      h2 {
+        font-weight: bold;
+        font-size: 1.7rem;
+        padding-right: 5px;
+        display: inline-block;
+        height: 50px;
+        line-height: 45px;
+      }
+    }
+
+}
+.dark-menu {
+  .item {
+    padding: 10px 0;
+    //margin: 0;
+    margin-bottom: -18px;
+    //font-size: 1.2rem;
+    i.icon.icon-menu {
+      //width: 80px;
+      //font-size: 1.6rem;
+      //display: inline-block !important;
+      //padding-top: 5px 0 0 0;
+    }
+    span {
+      font-size: 1.2rem;
+      margin-left: 15px;
+      //padding: 0 0 5px 0;
+    }
+  }
 }

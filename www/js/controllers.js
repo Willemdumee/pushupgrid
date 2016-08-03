@@ -13,42 +13,43 @@ angular.module('starter.controllers', [])
 
     .controller('homeCtrl', function ($scope, $localstorage, $cordovaSQLite, $ionicPlatform) {
 
+        var today = new Date();
+        //for testing purposes set current date to tomorrow
+        //today = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+        var timeOffset = today.getTimezoneOffset() / 60;
+        today.setHours(-timeOffset, 0, 0, 0);
 
-        $ionicPlatform.ready(function() {
-            var day = new Date();
-            day.setHours(0, 0, 0, 0);
-            $scope.save(5, day);
-            $scope.load();
+        today = JSON.stringify(today);
+
+        $scope.items = [];
+        $scope.pushups = 0;
+
+        $ionicPlatform.ready(function () {
+
+            updatePushups();
+            loadHistory();
+
         });
-        $scope.save = function (pushups, day) {
 
-            $cordovaSQLite.execute(db, 'INSERT INTO Days (pushups, day) VALUES (?,?)', [pushups, day])
-                .then(function (result) {
-                    console.log("Day saved successful, cheers!");
-                }, function (error) {
-                    console.log("Error on saving: " + error.message);
-                })
+        loadHistory = function () {
 
-        };
-
-        $scope.load = function () {
-
-            // Execute SELECT statement to load message from database.
             $cordovaSQLite.execute(db, 'SELECT * FROM Days ORDER BY id DESC')
                 .then(
                     function (result) {
                         for (var i = 0; i < result.rows.length; i++) {
-                            console.log(result.rows.item(i).pushups, result.rows.item(i).day);
+                            var item = {
+                                'pushups': result.rows.item(i).pushups,
+                                'day': JSON.parse(result.rows.item(i).day),
+                                'id': result.rows.item(i).id
+                            };
+                            $scope.items.push(item);
                         }
                     }
+
                 );
-        }
+        };
 
-        var day = new Date();
-        day.setHours(0, 0, 0, 0);
-        $scope.day = day;
 
-        $scope.pushups = 0;
         $scope.$on("$ionicView.enter", function (scopes, states) {
             if (states.fromCache && states.stateName == "app.home") {
                 $scope.pushups = 0;
@@ -57,37 +58,115 @@ angular.module('starter.controllers', [])
             }
         });
 
-        updatePushups = function () {
-            var today = new Date();
-            today.setHours(0, 0, 0, 0);
-            // if day exists in localStorage then set grid from localStorage
-            if ($localstorage.get(today)) {
-                var sets = JSON.parse($localstorage.get(today));
-                for (var key in sets) {
-                    if (sets.hasOwnProperty(key)) {
-                        console.log(key + " -> " + JSON.stringify(sets[key].value));
-                        var pushupSet = JSON.stringify(sets[key].value);
-                        $scope.pushups = $scope.pushups + parseInt(pushupSet);
-                    }
-                }
-
-            }
+        $scope.goToGrid = function() {
+            $state.go('app/grid');
         }
 
-        updatePushups();
+        updatePushups = function () {
+
+            // if day exists in localStorage then set grid from localStorage
+            if ($localstorage.get('today')) {
+                console.log('theres a day in localstorage');
+                var storedData = JSON.parse($localstorage.get('today'));
+                var storedDay = storedData.day;
+                if (storedDay == today) {
+                    console.log('today is the day');
+                    // go ahead and check what youve done today
+                    var sets = storedData.sets;
+                    for (var key in sets) {
+                        if (sets.hasOwnProperty(key)) {
+                            var pushupSet = JSON.stringify(sets[key].value);
+                            if (pushupSet != 'null')
+                                $scope.pushups = $scope.pushups + parseInt(pushupSet);
+                        }
+                    }
+                } else {
+                    // this is an old day, save it in database
+                    console.log('start  fresh');
+                    //get data ready
+                    var day = storedData.day;
+                    var oldSets = storedData.sets;
+                    var pushups = 0;
+                    for (var oldKey in oldSets) {
+                        if (oldSets.hasOwnProperty(oldKey)) {
+                            var oldPushupSet = JSON.stringify(oldSets[oldKey].value);
+                            pushups = pushups + parseInt(oldPushupSet);
+                        }
+                    }
+                    // and save it
+                    $cordovaSQLite.execute(db, 'INSERT INTO Days (pushups, day) VALUES (?,?)', [pushups, day])
+                        .then(function (result) {
+                            console.log("Day saved successful, cheers!");
+                        }, function (error) {
+                            console.log("Error on saving: " + error.message);
+                        })
+                }
+            }
+        };
+
     })
 
-    .controller('gridCtrl', function ($scope, $localstorage) {
-        $scope.itemWidth = 'medium';
+    .controller('gridCtrl', function ($scope, $localstorage, $state) {
+
         var today = new Date();
-        today.setHours(0, 0, 0, 0);
-        // if day exists in localStorage then set grid from localStorage
-        if ($localstorage.get(today)) {
-            console.log($localstorage.get(today));
-            $scope.items = JSON.parse($localstorage.get(today));
+        // get offset of time so time is set to midnight
+        var timeOffset = today.getTimezoneOffset() / 60;
+        today.setHours(-timeOffset, 0, 0, 0);
+        today = JSON.stringify(today);
+
+        $scope.itemWidth = 'medium';
+        $scope.gridSize = '100';
+
+        if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
+            $scope.itemWidth = $localstorage.get('ctrl-gridWidth');
+        }
+        if (typeof $localstorage.get('ctrl-gridSize') !== 'undefined') {
+            $scope.gridSize = $localstorage.get('ctrl-gridSize');
+        }
+
+        $scope.$on("$ionicView.enter", function (scopes, states) {
+            if (states.fromCache && states.stateName == "app.grid") {
+                if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
+                    $scope.itemWidth = $localstorage.get('ctrl-gridWidth');
+                }
+                if (typeof $localstorage.get('ctrl-gridSize') !== 'undefined') {
+                    $scope.gridSize = $localstorage.get('ctrl-gridSize');
+                }
+            }
+        });
+
+
+
+        // check if 'today' exists in local storage
+        if ($localstorage.get('today')) {
+            console.log('there is a today in localstorage');
+            //get data
+            var storedData = JSON.parse($localstorage.get('today'));
+            var storedDay = JSON.stringify(storedData.day);
+            console.log(today, storedDay);
+            // check if the day in stored data is today
+            if (storedData.day == today) {
+                console.log('the day in localstorage matches today');
+                $scope.items = storedData.sets;
+            } else {
+                console.log('the day in localstorage doesnt match today');
+                // @todo create function to store data into sqlite
+                createTodayGrid();
+            }
         } else {
+            console.log('today doenst exist yet in localstorage');
+            createTodayGrid();
+        }
+
+        $scope.submitForm = function (item, gridValue) {
+            $scope.items[item].value = gridValue;
+            setGridinLocalStorage();
+        }
+
+        function createTodayGrid() {
+            console.log('create todays grid');
             $scope.items = [];
-            for (var i = 0; i < 100; i++) {
+            for (var i = 0; i < $scope.gridSize; i++) {
                 var item = {
                     "index": i,
                     "value": 0
@@ -95,18 +174,44 @@ angular.module('starter.controllers', [])
                 $scope.items.push(item);
 
             }
-            $localstorage.set(today, JSON.stringify($scope.items));
+            setGridinLocalStorage();
         }
 
-        $scope.submitForm = function (item, gridValue) {
-            console.log($scope.items);
-            $scope.items[item].value = gridValue;
-            $localstorage.set(today, JSON.stringify($scope.items));
+        function setGridinLocalStorage() {
+            $localstorage.set('today', JSON.stringify({
+                "day": today,
+                "sets": $scope.items
+            }));
 
         }
     })
 
     .controller('settingsCtrl', function ($scope, $localstorage) {
-        $scope.gridWidth = 'medium';
-        $scope.gridRedirect = 'home';
-    })
+        $scope.settingsData = [];
+
+        $scope.settingsData.gridWidth = 'medium';
+        $scope.settingsData.gridRedirect = 'home';
+        $scope.settingsData.gridSize = '100';
+
+        console.log($localstorage.get('ctrl-gridWidth'));
+
+        if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
+            $scope.settingsData.gridWidth = $localstorage.get('ctrl-gridWidth');
+        } else {
+            $localstorage.set('ctrl-gridWidth', 'medium');
+        }
+        if (typeof $localstorage.get('ctrl-gridSize') !== 'undefined') {
+            $scope.settingsData.gridSize = $localstorage.get('ctrl-gridSize');
+        } else {
+            $localstorage.set('ctrl-gridWidth', '100');
+        }
+
+        $scope.changeGridSize = function () {
+            $localstorage.set('ctrl-gridSize', $scope.settingsData.gridSize);
+        }
+
+        $scope.changeGridWidth = function () {
+            $localstorage.set('ctrl-gridWidth', $scope.settingsData.gridWidth);
+        }
+
+    });
