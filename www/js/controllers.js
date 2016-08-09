@@ -1,90 +1,56 @@
 angular.module('starter.controllers', [])
 
     .controller('AppCtrl', function ($scope, $ionicModal, $timeout) {
-
-        // With the new view caching in Ionic, Controllers are only called
-        // when they are recreated or on app start, instead of every page change.
-        // To listen for when this page is active (for example, to refresh data),
-        // listen for the $ionicView.enter event:
         //$scope.$on('$ionicView.enter', function(e) {
         //});
 
     })
 
-    .controller('homeCtrl', function ($scope, $localstorage, $cordovaSQLite, $ionicPlatform, $state) {
+    .controller('homeCtrl', function ($scope, $localstorage, $ionicPlatform, $state, sqliteStorage, $ionicModal, $timeout, dayFactory) {
 
-        var today = new Date();
-        //for testing purposes set current date to tomorrow
-        //today = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
-        var timeOffset = today.getTimezoneOffset() / 60;
-        today.setHours(-timeOffset, 0, 0, 0);
-
-        today = JSON.stringify(today);
-
+        var today = dayFactory.get();
         $scope.items = [];
         $scope.pushups = 0;
 
+
         $ionicPlatform.ready(function () {
-
-            updatePushups();
-            loadHistory();
-
+            $scope.items = sqliteStorage.get();
         });
 
-        loadHistory = function () {
-
-            $cordovaSQLite.execute(db, 'SELECT * FROM Days ORDER BY id DESC')
-                .then(
-                    function (result) {
-                        for (var i = 0; i < result.rows.length; i++) {
-                            var item = {
-                                'pushups': result.rows.item(i).pushups,
-                                'day': JSON.parse(result.rows.item(i).day),
-                                'id': result.rows.item(i).id
-                            };
-                            $scope.items.push(item);
-                        }
-                    }
-
-                );
-        };
-
-
         $scope.$on("$ionicView.enter", function (scopes, states) {
+            $scope.pushups = 0;
+            updatePushups();
+            $scope.$broadcast("updateGrid");
             if (states.fromCache && states.stateName == "app.home") {
-                $scope.pushups = 0;
-                updatePushups();
-
+                $scope.$broadcast("updateGrid");
             }
         });
 
-        $scope.goToGrid = function() {
+        $scope.goToGrid = function () {
             $state.go('app.grid');
         };
+
+
 
         updatePushups = function () {
 
             // if day exists in localStorage then set grid from localStorage
             if ($localstorage.get('today')) {
-                console.log('theres a day in localstorage');
                 var storedData = JSON.parse($localstorage.get('today'));
                 var storedDay = storedData.day;
                 if (storedDay == today) {
-                    console.log('today is the day');
-                    // go ahead and check what youve done today
+                    // go ahead and check what you've done today
                     var sets = storedData.sets;
                     for (var key in sets) {
                         if (sets.hasOwnProperty(key)) {
                             var pushupSet = JSON.stringify(sets[key].value);
-                            console.log(pushupSet);
                             if (pushupSet != 'null')
                                 $scope.pushups = $scope.pushups + parseInt(pushupSet);
                         }
                     }
+                    $scope.$broadcast("updateGrid");
                 } else {
                     // this is an old day, save it in database
-                    console.log('start  fresh');
-                    //get data ready
                     var day = storedData.day;
                     var oldSets = storedData.sets;
                     var pushups = 0;
@@ -94,123 +60,30 @@ angular.module('starter.controllers', [])
                             pushups = pushups + parseInt(oldPushupSet);
                         }
                     }
-                    // and save it
-                    $cordovaSQLite.execute(db, 'INSERT INTO Days (pushups, day) VALUES (?,?)', [pushups, day])
-                        .then(function (result) {
-                            console.log("Day saved successful, cheers!");
-                        }, function (error) {
-                            console.log("Error on saving: " + error.message);
-                        })
+                    sqliteStorage.add(day, pushups);
+                    createTodayGrid();
                 }
             }
         };
 
-    })
-
-    .controller('gridCtrl', function ($scope, $localstorage) {
-
-        var today = new Date();
-        // get offset of time so time is set to midnight
-        var timeOffset = today.getTimezoneOffset() / 60;
-        today.setHours(-timeOffset, 0, 0, 0);
-        today = JSON.stringify(today);
-
-        $scope.itemWidth = 'medium';
-        $scope.gridSize = '100';
-        $scope.keyboardVisible = false;
-
-        // used later to determine which field in grid is used
-        $scope.activeField = false;
-
-        // ion digit keyboard settings
-        $scope.keyboardSettings = {
-            theme: "asertive",
-            action: function(number) {
-                console.log(number, $scope.activeField);
-                $scope.items[$scope.activeField].value += number;
-                setGridinLocalStorage();
-            },
-            leftButton: {
-                html: '<i class="icon ion-minus"></i>',
-                action: function() {
-                    if ($scope.items[$scope.activeField].value > 0) {
-                        $scope.items[$scope.activeField].value -= 1;
-                        setGridinLocalStorage();
-                    }
-                }
-            },
-            rightButton: {
-                html: '<i class="icon ion-plus"></i>',
-                action: function() {
-                    $scope.items[$scope.activeField].value += 1;
-                    setGridinLocalStorage();
-                }
-            }
+        $ionicModal.fromTemplateUrl('day-modal.html', {
+            scope: $scope,
+            animation: 'slide-in-up'
+        }).then(function (modal) {
+            $scope.modal = modal;
+        });
+        $scope.openModal = function () {
+            $scope.modal.show();
         };
-
-        $scope.showKeyboard = function($event, index) {
-            if ($event.stopPropagation) $event.stopPropagation();
-            if ($event.preventDefault) $event.preventDefault();
-
-            $scope.activeField = index;
-            // clear the already existing value
-            $scope.items[$scope.activeField].value = 0;
-            setGridinLocalStorage();
-            $scope.keyboardVisible = true;
+        $scope.closeModal = function () {
+            $scope.modal.hide();
         };
-
-        $scope.hideKeyboard = function($event) {
-            $scope.keyboardVisible = false;
-        };
-
-        if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
-            $scope.itemWidth = $localstorage.get('ctrl-gridWidth');
-        }
-        if (typeof $localstorage.get('ctrl-gridSize') !== 'undefined') {
-            $scope.gridSize = $localstorage.get('ctrl-gridSize');
-        }
-
-        $scope.$on("$ionicView.enter", function (scopes, states) {
-            if (states.fromCache && states.stateName == "app.grid") {
-                if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
-                    $scope.itemWidth = $localstorage.get('ctrl-gridWidth');
-                }
-                if (typeof $localstorage.get('ctrl-gridSize') !== 'undefined') {
-                    $scope.gridSize = $localstorage.get('ctrl-gridSize');
-                }
-            }
+        // Cleanup the modal when we're done with it!
+        $scope.$on('$destroy', function () {
+            $scope.modal.remove();
         });
 
-
-
-        // check if 'today' exists in local storage
-        if ($localstorage.get('today')) {
-            console.log('there is a today in localstorage');
-            //get data
-            var storedData = JSON.parse($localstorage.get('today'));
-            var storedDay = JSON.stringify(storedData.day);
-            console.log(today, storedDay);
-            // check if the day in stored data is today
-            if (storedData.day == today) {
-                console.log('the day in localstorage matches today');
-                $scope.items = storedData.sets;
-            } else {
-                console.log('the day in localstorage doesnt match today');
-                // @todo create function to store data into sqlite
-                createTodayGrid();
-            }
-        } else {
-            console.log('today doenst exist yet in localstorage');
-            createTodayGrid();
-        }
-
-        $scope.submitForm = function (item, gridValue) {
-            $scope.items[item].value = gridValue;
-            setGridinLocalStorage();
-        }
-
         function createTodayGrid() {
-            console.log('create todays grid');
             $scope.items = [];
             for (var i = 0; i < $scope.gridSize; i++) {
                 var item = {
@@ -223,11 +96,132 @@ angular.module('starter.controllers', [])
             setGridinLocalStorage();
         }
 
+
         function setGridinLocalStorage() {
             $localstorage.set('today', JSON.stringify({
                 "day": today,
                 "sets": $scope.items
             }));
+            $scope.$broadcast("updateGrid");
+        }
+
+    })
+
+    .controller('gridCtrl', function ($scope, $ionicPlatform, $localstorage, sqliteStorage, gridFactory, dayFactory) {
+
+        var today = dayFactory.get();
+
+        $scope.itemWidth = 'medium';
+        $scope.gridSize = '100';
+        $scope.keyboardVisible = false;
+        // used later to determine which field in grid is used
+        $scope.activeField = false;
+
+        // ion digit keyboard settings
+        $scope.keyboardSettings = {
+            theme: "asertive",
+            action: function (number) {
+                $scope.items[$scope.activeField].value += number;
+                setGridinLocalStorage();
+            },
+            leftButton: {
+                html: '<i class="icon ion-minus"></i>',
+                action: function () {
+                    if ($scope.items[$scope.activeField].value > 0) {
+                        $scope.items[$scope.activeField].value -= 1;
+                        setGridinLocalStorage();
+                    }
+                }
+            },
+            rightButton: {
+                html: '<i class="icon ion-plus"></i>',
+                action: function () {
+                    $scope.items[$scope.activeField].value += 1;
+                    setGridinLocalStorage();
+                }
+            }
+        };
+
+        $scope.showKeyboard = function ($event, index) {
+            if ($event.stopPropagation) $event.stopPropagation();
+            if ($event.preventDefault) $event.preventDefault();
+
+            $scope.activeField = index;
+            // clear the already existing value
+            $scope.items[$scope.activeField].value = 0;
+            setGridinLocalStorage();
+            $scope.keyboardVisible = true;
+        };
+
+        $scope.hideKeyboard = function ($event) {
+            $scope.keyboardVisible = false;
+        };
+
+        if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
+            $scope.itemWidth = $localstorage.get('ctrl-gridWidth');
+        }
+        if (typeof $localstorage.get('ctrl-gridSize') !== 'undefined') {
+            $scope.gridSize = $localstorage.get('ctrl-gridSize');
+        }
+
+        $scope.$on("$ionicView.enter", function (scopes, states) {
+            $scope.$broadcast("updateGrid");
+            if (states.fromCache && states.stateName == "app.grid") {
+                if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
+                    $scope.itemWidth = $localstorage.get('ctrl-gridWidth');
+                }
+                if (typeof $localstorage.get('ctrl-gridSize') !== 'undefined') {
+                    $scope.gridSize = $localstorage.get('ctrl-gridSize');
+                }
+            }
+        });
+
+        $ionicPlatform.ready(function () {
+
+            // check if 'today' exists in local storage
+            if ($localstorage.get('today')) {
+                //get data
+                var storedData = JSON.parse($localstorage.get('today'));
+                var storedDay = storedData.day;
+                // check if the day in stored data is today
+                if (storedData.day == today) {
+                    $scope.items = storedData.sets;
+                } else {
+                    var sets = storedData.sets;
+                    var pushups = 0;
+                    for (var key in sets) {
+                        if (sets.hasOwnProperty(key)) {
+                            var pushupSet = JSON.stringify(sets[key].value);
+                            pushups = pushups + parseInt(pushupSet);
+                        }
+                    }
+                    // add day to database
+                    var addedDay = sqliteStorage.add(storedDay, pushups);
+                    createTodayGrid();
+                }
+            } else {
+                createTodayGrid();
+            }
+        });
+
+        $scope.submitForm = function (item, gridValue) {
+            $scope.items[item].value = gridValue;
+            setGridinLocalStorage();
+        }
+
+        function createTodayGrid() {
+            $scope.items = gridFactory.create($scope.gridSize);
+            setGridinLocalStorage();
+            $scope.$broadcast("updateGrid");
+        }
+
+        function setGridinLocalStorage() {
+            $localstorage.set('today', JSON.stringify({
+                "day": today,
+                "sets": $scope.items
+            }));
+            // make sure that directive 'grid-progress 'knows the grid is updated
+            $scope.$broadcast("updateGrid");
 
         }
     })
@@ -238,8 +232,6 @@ angular.module('starter.controllers', [])
         $scope.settingsData.gridWidth = 'medium';
         $scope.settingsData.gridRedirect = 'home';
         $scope.settingsData.gridSize = '100';
-
-        console.log($localstorage.get('ctrl-gridWidth'));
 
         if (typeof $localstorage.get('ctrl-gridWidth') !== 'undefined') {
             $scope.settingsData.gridWidth = $localstorage.get('ctrl-gridWidth');

@@ -6,7 +6,7 @@ var db;
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova', 'ion-digit-keyboard'])
+angular.module('starter', ['ionic', 'starter.controllers', 'starter.directives', 'ngCordova', 'ion-digit-keyboard'])
 
     .run(function ($ionicPlatform, $cordovaSQLite) {
         $ionicPlatform.ready(function () {
@@ -14,15 +14,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova', 'ion-dig
             db = $cordovaSQLite.openDB({name: "ctrl-pushupgrid.db", location: 'default'});
             $cordovaSQLite.execute(db, 'CREATE TABLE IF NOT EXISTS Days (id INTEGER PRIMARY KEY AUTOINCREMENT, pushups INTEGER, day DATETIME)');
 
-            // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-            // for form inputs)
             if (window.cordova && window.cordova.plugins.Keyboard) {
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
                 cordova.plugins.Keyboard.disableScroll(true);
 
             }
             if (window.StatusBar) {
-                // org.apache.cordova.statusbar required
                 StatusBar.styleDefault();
             }
 
@@ -117,11 +114,86 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ngCordova', 'ion-dig
         }
     }])
 
-    .factory('sqliteExamples', [$cordovaSQLite, function ($cordovaSQLite) {
-        //update
-        // $cordovaSQLite.execute(db, "UPDATE Days SET day = '\"2016-08-01T00:00:00.000Z\"', pushups = '48' WHERE id = 32");
-        //insert
-        // $cordovaSQLite.execute(db, "INSERT INTO Days (day,pushups) VALUES ('\"2016-08-01T00:00:00.000Z\"', 68)");
-        // delete
-        // $cordovaSQLite.execute(db, "DELETE FROM Days WHERE id = 16");
-    }]);
+    // .factory('sqliteExamples', ['$cordovaSQLite', function ($cordovaSQLite) {
+    //update
+    // $cordovaSQLite.execute(db, "UPDATE Days SET day = '\"2016-08-01T00:00:00.000Z\"', pushups = '48' WHERE id = 32");
+    //insert
+    // $cordovaSQLite.execute(db, "INSERT INTO Days (day,pushups) VALUES ('\"2016-08-01T00:00:00.000Z\"', 68)");
+    // delete
+    // $cordovaSQLite.execute(db, "DELETE FROM Days WHERE id = 16");
+    // }])
+
+    .factory('sqliteStorage', ['$cordovaSQLite', function ($cordovaSQLite) {
+        return {
+            add: function (day, pushups) {
+                if (pushups == 0)
+                    return;
+                $cordovaSQLite.execute(db, 'INSERT INTO Days (pushups, day) VALUES (?,?)', [pushups, day])
+                    .then(function (result) {
+                        return true;
+                    }, function (error) {
+                        return false;
+                    })
+            },
+            get: function (order) {
+                order = order || 'DESC';
+                var items = [];
+                $cordovaSQLite.execute(db, 'SELECT * FROM Days ORDER BY id ' + order)
+                    .then(
+                        function (result) {
+                            for (var i = 0; i < result.rows.length; i++) {
+                                var item = {
+                                    'pushups': result.rows.item(i).pushups,
+                                    'day': JSON.parse(result.rows.item(i).day),
+                                    'id': result.rows.item(i).id
+                                };
+                                items.push(item);
+                            }
+                        });
+
+                return items;
+            },
+            delete: function (id) {
+                $cordovaSQLite.execute(db, 'DELETE FROM Days WHERE id  = ' + id)
+                    .then(
+                        function (result) {
+                            return true;
+                        }, function (error) {
+                            return false;
+                        });
+            }
+        }
+    }])
+
+    .factory('gridFactory', ['$localstorage', function ($localstorage) {
+        return {
+            create: function (gridSize) {
+                var items = [];
+                for (var i = 0; i < gridSize; i++) {
+                    var item = {
+                        "index": i,
+                        "value": 0
+                    }
+                    items.push(item);
+
+                }
+                return items;
+            },
+            addToLocalstorage: function (order) {
+            }
+        }
+    }])
+
+    .service('dayFactory', function () {
+        return {
+            get: function () {
+                var today = new Date();
+                // get offset of time so time is set to midnight
+                today = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+                var timeOffset = today.getTimezoneOffset() / 60;
+                today.setHours(-timeOffset, 0, 0, 0);
+                today = JSON.stringify(today);
+                return today;
+            }
+        }
+    });

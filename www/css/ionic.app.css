@@ -9815,13 +9815,24 @@ a.button {
   -webkit-transition-duration: 0s;
   transition-duration: 0s; }
 
+.progress-wrapper {
+  height: 3px;
+  width: 100%;
+  background-color: #211331; }
+
+.progress {
+  height: 3px;
+  width: 0;
+  background: greenyellow;
+  -webkit-transition: width 1.5s;
+  transition: width 1.5s; }
+
 .grid-item {
   position: relative;
   float: left;
   width: 20%;
   height: 0;
   padding-bottom: 20%;
-  background: #211331;
   z-index: 1;
   text-align: center; }
 
@@ -9849,19 +9860,23 @@ a.button {
   z-index: 3;
   color: #fff;
   font-size: 1.6rem; }
+  .grid-item .set.noshow {
+    font-size: 0.00001rem; }
 
 .fillable {
   position: absolute;
-  top: 10%;
-  left: 10%;
-  width: 80%;
-  height: 80%;
+  top: 5%;
+  left: 5%;
+  width: 90%;
+  height: 90%;
   background-color: #502f77;
-  border-radius: 5px;
+  border-radius: 2px;
   z-index: 4;
-  pointer-events: none; }
+  pointer-events: none;
+  -webkit-transition: all 1.5s;
+  transition: all 1.5s; }
   .fillable.active {
-    background-color: #372152; }
+    background-color: transparent; }
 
 .dark-menu {
   background-color: #110a1a; }
@@ -9936,3 +9951,15 @@ a.button {
 .digit-keyboard-key-wrapper {
   background-color: #fff;
   color: #211331; }
+
+.congrats {
+  padding-top: 30px; }
+  .congrats h1 {
+    font-size: 1.8rem; }
+  .congrats h2 {
+    font-size: 5.0rem;
+    font-weight: bold; }
+
+.grid-view {
+  background-size: cover;
+  background-position: center; }

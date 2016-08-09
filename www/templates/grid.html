@@ -1,13 +1,16 @@
 <ion-view view-title="Your grid">
-    <ion-content ng-click="hideKeyboard($event)">
 
+    <ion-content ng-click="hideKeyboard($event)" class="grid-view energized-bg">
+        <grid-progress></grid-progress>
+        <div class="wrapper">
             <div ng-repeat="item in items" class="grid-item" ng-class="itemWidth">
-
-                <!--<input type="number" name="{{ item.index }}" ng-model="gridValue" ng-value="(item.value == 0 ? '' : item.value)" min="0" ng-click="showKeyboard($event, $index)" readonly>-->
-                <div class="set" ng-model="gridValue"  ng-click="showKeyboard($event, $index)">{{ item.value }}</div>
-
-                <span ng-show="item.value == 0" class="fillable" ng-class="($index == activeField ? 'active' : '')"></span>
+                <div class="set" ng-model="gridValue" ng-click="showKeyboard($event, $index)"
+                     ng-class="item.value == 0 ? 'noshow' : ''">{{ item.value }}
+                </div>
+                <span ng-show="item.value == 0" class="fillable"
+                      ng-class="($index == activeField ? 'active' : '')"></span>
             </div>
+        </div>
 
     </ion-content>
     <ion-digit-keyboard settings="keyboardSettings" ng-show="keyboardVisible"></ion-digit-keyboard>

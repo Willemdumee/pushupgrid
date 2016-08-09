@@ -26,13 +26,26 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 // Include all of Ionic
 @import "www/lib/ionic/scss/ionic";
 
+.progress-wrapper {
+  height: 3px;
+  width: 100%;
+  background-color: $energized;
+}
+.progress {
+  height: 3px;
+  width: 0;
+  background: greenyellow;
+  -webkit-transition: width 1.5s;
+  transition: width 1.5s;
+}
+
 .grid-item {
   position: relative;
   float: left;
   width: 20%;
   height: 0;
   padding-bottom: 20%;
-  background: #211331;
+  //background: #211331;
   z-index: 1;
   text-align: center;
 }
@@ -61,21 +74,27 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
   z-index: 3;
   color: #fff;
   font-size: 1.6rem;
+  &.noshow {
+    font-size: 0.00001rem;
+  }
 }
 .fillable {
   position: absolute;
-  top: 10%;
-  left: 10%;
-  width: 80%;
-  height: 80%;
+  top: 5%;
+  left: 5%;
+  width: 90%;
+  height: 90%;
   background-color: #502f77;
-  border-radius: 5px;
+  border-radius: 2px;
   z-index: 4;
   pointer-events: none;
+  -webkit-transition: all 1.5s;
+  transition: all 1.5s;
   &.active {
-    background-color: darken(#502f77, 10);
+    background-color: transparent;
   }
 }
+
 
 
 
@@ -174,4 +193,22 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 .digit-keyboard-key-wrapper {
   background-color: #fff;
   color:$energized;
+}
+
+//modal
+.congrats {
+  padding-top: 30px;
+  h1 {
+    font-size: 1.8rem;
+  }
+  h2 {
+    font-size: 5.0rem;
+    font-weight: bold;
+  }
+}
+
+.grid-view {
+  //background-image: url('../img/background.png');
+  background-size: cover;
+  background-position: center;
 }
